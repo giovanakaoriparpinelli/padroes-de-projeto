@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Notificações - Padrões de Projeto</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .status-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .status-section h2 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .status-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .status-controls label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 1.1rem;
+        }
+
+        select {
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            background: white;
+            min-width: 200px;
+            transition: all 0.3s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .channels-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .channel-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .channel-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .channel-card h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .channel-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: #ccc;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #667eea;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(26px);
+        }
+
+        .log-section {
+            background: #1a1a1a;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .log-header {
+            background: #333;
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .log {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+        }
+
+        .log::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .log::-webkit-scrollbar-track {
+            background: #333;
+        }
+
+        .log::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        .current-status {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .channels-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            select, button {
+                width: 100%;
+            }
+        }
+
+        .notification-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-left: 4px solid #667eea;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 350px;
+        }
+
+        .notification-popup.show {
+            transform: translateX(0);
+        }
+
+        .notification-popup .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            min-width: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔔 Sistema de Notificações</h1>
+            <p>Demonstração dos Padrões Observer, Strategy e Command</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="current-status" id="currentStatus">
+                Status Atual: Aguardando...
+            </div>
+
+            <div class="status-section">
+                <h2>Alterar Status do Pedido</h2>
+                <div class="status-controls">
+                    <label for="status">Novo Status:</label>
+                    <select id="status">
+                        <option value="Pedido Recebido">📋 Pedido Recebido</option>
+                        <option value="Pagamento Confirmado">💳 Pagamento Confirmado</option>
+                        <option value="Em Preparação">📦 Em Preparação</option>
+                        <option value="Enviado">🚚 Enviado</option>
+                        <option value="Em Trânsito">🛣️ Em Trânsito</option>
+                        <option value="Entregue">✅ Entregue</option>
+                    </select>
+                    <button id="updateStatus">Atualizar Status</button>
+                </div>
+            </div>
+
+            <div class="channels-section">
+                <div class="channel-card">
+                    <h3>🔔 Notificação Popup</h3>
+                    <div class="channel-toggle">
+                        <div class="toggle-switch active" data-channel="popup"></div>
+                        <span>Ativo</span>
+                    </div>
+                    <p>Exibe notificações visuais na tela</p>
+                </div>
+
+                <div class="channel-card">
+                    <h3>🖥️ Console do Navegador</h3>
+                    <div class="channel-toggle">
+                        <div class="toggle-switch active" data-channel="console"></div>
+                        <span>Ativo</span>
+                    </div>
+                    <p>Registra logs no console (F12)</p>
+                </div>
+            </div>
+
+            <div class="log-section">
+                <div class="log-header">
+                    <span>📝</span>
+                    <span>Log de Notificações</span>
+                    <button id="clearLog" style="margin-left: auto; padding: 5px 10px; font-size: 12px;">Limpar</button>
+                </div>
+                <div id="log" class="log">Sistema iniciado. Aguardando alterações de status...<br></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Command Pattern
+        class NotificationCommand {
+            constructor(strategy, message) {
+                this.strategy = strategy;
+                this.message = message;
+                this.isActive = true;
+            }
+
+            execute() {
+                if (this.isActive) {
+                    this.strategy.send(this.message);
+                }
+            }
+
+            setActive(active) {
+                this.isActive = active;
+            }
+        }
+
+        // Strategy Pattern
+        class PopupStrategy {
+            send(message) {
+                this.showNotification(message);
+            }
+
+            showNotification(message) {
+                // Remove notificação anterior se existir
+                const existingPopup = document.querySelector('.notification-popup');
+                if (existingPopup) {
+                    existingPopup.remove();
+                }
+
+                // Criar nova notificação
+                const popup = document.createElement('div');
+                popup.className = 'notification-popup';
+                popup.innerHTML = `
+                    <button class="close-btn">&times;</button>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <span style="font-size: 24px;">🔔</span>
+                        <strong>Notificação</strong>
+                    </div>
+                    <p>${message}</p>
+                `;
+
+                document.body.appendChild(popup);
+
+                // Mostrar animação
+                setTimeout(() => popup.classList.add('show'), 100);
+
+                // Fechar automaticamente após 5 segundos
+                setTimeout(() => {
+                    if (popup.parentNode) {
+                        popup.classList.remove('show');
+                        setTimeout(() => popup.remove(), 300);
+                    }
+                }, 5000);
+
+                // Botão de fechar
+                popup.querySelector('.close-btn').addEventListener('click', () => {
+                    popup.classList.remove('show');
+                    setTimeout(() => popup.remove(), 300);
+                });
+            }
+        }
+
+        class ConsoleStrategy {
+            send(message) {
+                const timestamp = new Date().toLocaleString();
+                console.log(`🔔 [${timestamp}] ${message}`);
+            }
+        }
+
+        class LogStrategy {
+            constructor(logElement) {
+                this.logElement = logElement;
+            }
+
+            send(message) {
+                const time = new Date().toLocaleTimeString();
+                this.logElement.innerHTML += `<span style="color: #00ffff;">[${time}]</span> <span style="color: #ffff00;">🔔</span> ${message}<br>`;
+                this.logElement.scrollTop = this.logElement.scrollHeight;
+            }
+        }
+
+        // Observer Pattern
+        class Pedido {
+            constructor() {
+                this.status = "";
+                this.observers = [];
+            }
+
+            subscribe(observer) {
+                this.observers.push(observer);
+            }
+
+            unsubscribe(observer) {
+                this.observers = this.observers.filter(o => o !== observer);
+            }
+
+            setStatus(newStatus) {
+                const oldStatus = this.status;
+                this.status = newStatus;
+                this.updateCurrentStatusDisplay();
+                this.notifyObservers(oldStatus);
+            }
+
+            updateCurrentStatusDisplay() {
+                const statusDisplay = document.getElementById("currentStatus");
+                statusDisplay.textContent = `Status Atual: ${this.status}`;
+            }
+
+            notifyObservers(oldStatus) {
+                const message = oldStatus 
+                    ? `Status alterado de "${oldStatus}" para "${this.status}"`
+                    : `Status definido como: ${this.status}`;
+                    
+                this.observers.forEach(observer => {
+                    observer.message = message;
+                    observer.execute();
+                });
+            }
+        }
+
+        // Setup e inicialização
+        const statusSelect = document.getElementById("status");
+        const updateButton = document.getElementById("updateStatus");
+        const logElement = document.getElementById("log");
+        const clearLogButton = document.getElementById("clearLog");
+
+        // Instanciar o Pedido
+        const pedido = new Pedido();
+
+        // Criar estratégias
+        const popupStrategy = new PopupStrategy();
+        const consoleStrategy = new ConsoleStrategy();
+        const logStrategy = new LogStrategy(logElement);
+
+        // Criar comandos (Command Pattern)
+        const popupCommand = new NotificationCommand(popupStrategy, "");
+        const consoleCommand = new NotificationCommand(consoleStrategy, "");
+        const logCommand = new NotificationCommand(logStrategy, "");
+
+        // Inscrever os observadores (Observer Pattern)
+        pedido.subscribe(popupCommand);
+        pedido.subscribe(consoleCommand);
+        pedido.subscribe(logCommand);
+
+        // Mapeamento dos comandos para facilitar o controle
+        const commandMap = {
+            'popup': popupCommand,
+            'console': consoleCommand
+        };
+
+        // Configurar toggles dos canais
+        document.querySelectorAll('.toggle-switch').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const channel = toggle.dataset.channel;
+                const isActive = toggle.classList.contains('active');
+                
+                toggle.classList.toggle('active');
+                
+                const command = commandMap[channel];
+                if (command) {
+                    command.setActive(!isActive);
+                }
+                
+                // Atualizar texto do status
+                const statusText = toggle.parentNode.querySelector('span');
+                statusText.textContent = toggle.classList.contains('active') ? 'Ativo' : 'Inativo';
+            });
+        });
+
+        // Evento de atualização de status
+        updateButton.addEventListener("click", () => {
+            const newStatus = statusSelect.value;
+            pedido.setStatus(newStatus);
+        });
+
+        // Limpar log
+        clearLogButton.addEventListener("click", () => {
+            logElement.innerHTML = "Log limpo. Aguardando novas notificações...<br>";
+        });
+
+        // Permitir Enter para atualizar status
+        statusSelect.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                updateButton.click();
+            }
+        });
+
+        // Inicialização
+        logElement.innerHTML += `<span style="color: #00ffff;">[${new Date().toLocaleTimeString()}]</span> <span style="color: #90EE90;">✅</span> Sistema pronto para uso!<br>`;
+    </script>
+</body>
+</html>
